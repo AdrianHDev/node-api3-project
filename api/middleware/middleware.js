@@ -1,18 +1,24 @@
 const { getById } = require("../users/users-model");
 
 function logger(req, res, next) {
-  console.log(`[${req.method}] ${req.url} ${Date.now()}`);
+  console.log("In logger!")
+  console.log(`[${req.method}] ${req.url} \x1b[35m${Date().toLocaleString()}\x1b[0m `);
   next();
 }
 
 function validateUserId(req, res, next) {
   getById(req.params.id)
-    .then(next)
-    .catch((error) => {
+    .then((user) => {
+      if (user) {
+        next();
+      } else {
+        next({ status: 404, message: "user not found" });
+      }
+    })
+    .catch(() => {
       next({
         status: 404,
-        message: `User with ID ${req.params.id} could not be found`,
-        error: error.message,
+        message: `user not found`,
       });
     });
 }
