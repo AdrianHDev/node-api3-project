@@ -17,14 +17,15 @@ function validateUserId(req, res, next) {
     })
     .catch(() => {
       next({
-        status: 404,
-        message: `user not found`,
+        status: 500,
+        message: `server error`,
       });
     });
 }
 
 function validateUser(req, res, next) {
-  if (req.body.name) {
+  console.log(req.body)
+  if (!req.body.name) {
     next({ status: 400, message: "missing required name field" });
   } else {
     next();
@@ -32,7 +33,7 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  if (req.body.text) {
+  if (!req.body.text) {
     next({ status: 400, message: "missing required text field" });
   } else {
     next();
