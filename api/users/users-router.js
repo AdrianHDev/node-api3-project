@@ -1,6 +1,5 @@
 const express = require("express");
 const {
-  logger,
   validateUserId,
   validateUser,
   validatePost,
@@ -59,17 +58,35 @@ router.put("/:id", validateUserId, validateUser, (req, res, next) => {
   // and another middleware to check that the request body is valid
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", validateUserId, async (req, res, next) => {
+  const oldUser = await Users.getById(req.params.id)
+  Users.remove(req.params.id).then(removed => {
+    res.json(oldUser);
+  }).catch(err => {
+    console.error(err)
+    next({ status: 500, message: "internal server error." });
+  })
   // RETURN THE FRESHLY DELETED USER OBJECT
   // this needs a middleware to verify user id
 });
 
-router.get("/:id/posts", (req, res) => {
+router.get("/:id/posts", validateUserId, (req, res, next) => {
+  Users.getUserPosts(req.params.id).then(posts => {
+    console.log(posts)
+    res.json(posts)
+  }).catch(() => {
+    next({ status: 500, message: "internal server error"})
+  })
   // RETURN THE ARRAY OF USER POSTS
   // this needs a middleware to verify user id
 });
 
-router.post("/:id/posts", (req, res) => {
+router.post("/:id/posts", validateUserId, validatePost, (req, res, next) => {
+  Posts.insert(req.body).then(nPost => {
+    res.json(nPost)
+  }).catch(() => {
+    next({status: 500, message: "internal server error"})
+  })
   // RETURN THE NEWLY CREATED USER POST
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
