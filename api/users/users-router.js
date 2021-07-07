@@ -14,7 +14,6 @@ const router = express.Router();
 
 router.get("/", (req, res) => {
   Users.get().then((users) => {
-    console.log(users);
     res.json(users);
   });
 });
@@ -25,20 +24,17 @@ router.get("/:id", validateUserId, (req, res, next) => {
       res.json(user);
     })
     .catch((error) => {
-      console.log(error);
       next({ status: 500, message: "Internal server error", ...error });
     });
   // this needs a middleware to verify user id
 });
 
 router.post("/", validateUser, (req, res, next) => {
-  console.log(req);
   Users.insert(req.body)
     .then((user) => {
       res.json(user);
     })
     .catch((error) => {
-      console.log(error);
       next({ status: 500, message: "internal server error" });
     });
 });
@@ -50,7 +46,6 @@ router.put("/:id", validateUserId, validateUser, (req, res, next) => {
       res.json(user);
     })
     .catch((error) => {
-      console.log(error);
       next({ status: 500, message: "internal server error." });
     });
   // res.json({message: "Received"})
@@ -63,7 +58,6 @@ router.delete("/:id", validateUserId, async (req, res, next) => {
   Users.remove(req.params.id).then(removed => {
     res.json(oldUser);
   }).catch(err => {
-    console.error(err)
     next({ status: 500, message: "internal server error." });
   })
   // RETURN THE FRESHLY DELETED USER OBJECT
@@ -72,7 +66,6 @@ router.delete("/:id", validateUserId, async (req, res, next) => {
 
 router.get("/:id/posts", validateUserId, (req, res, next) => {
   Users.getUserPosts(req.params.id).then(posts => {
-    console.log(posts)
     res.json(posts)
   }).catch(() => {
     next({ status: 500, message: "internal server error"})
@@ -82,7 +75,7 @@ router.get("/:id/posts", validateUserId, (req, res, next) => {
 });
 
 router.post("/:id/posts", validateUserId, validatePost, (req, res, next) => {
-  Posts.insert(req.body).then(nPost => {
+  Posts.insert({...req.body, user_id: req.params.id }).then(nPost => {
     res.json(nPost)
   }).catch(() => {
     next({status: 500, message: "internal server error"})
@@ -94,10 +87,10 @@ router.post("/:id/posts", validateUserId, validatePost, (req, res, next) => {
 
 // eslint-disable-next-line no-unused-vars
 router.use((err, req, res, next) => {
-  console.log('catching!')
   res.status(err.status || 500 ).json({
     custom: "error occured.",
-    message: err.message
+    message: err.message,
+    err: err.err
   })
 })
 
